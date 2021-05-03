@@ -1,5 +1,5 @@
 #!/bin/bash
-set -euo pipefail
+set -eo pipefail
 
 verify_prerequisites() {
   if ! which PhoenixMiner &>/dev/null; then
@@ -13,7 +13,7 @@ SERVICE_NAME="mine-while-idle"
 SERVICE_FILE_PATH="$HOME/.local/share/systemd/user/$SERVICE_NAME.service"
 WALLET_ADDRESS=$1
 
-cd "$(dirname "$(greadlink -f "$0")")"
+cd "$(dirname "$(readlink -f "$0")")"
 
 if [[ $1 == "uninstall" ]]; then
   systemctl --user disable --now $SERVICE_NAME
@@ -28,6 +28,9 @@ if ! [[ $WALLET_ADDRESS =~ 0x.{40}$ ]]; then
   echo "You must provide an Ethereum wallet address to install this service"
   exit 1
 fi
+
+# Fail on unbound variables after init
+set -u
 
 verify_prerequisites
 
