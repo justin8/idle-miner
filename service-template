@@ -1,0 +1,8 @@
+[Unit]
+Description="Run miner while lock screen is active"
+
+[Service]
+ExecStart=%h/.local/bin/mine-when-idle WALLET_ADDRESS
+
+[Install]
+WantedBy=default.target
