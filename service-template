@@ -2,7 +2,7 @@
 Description="Run miner while lock screen is active"
 
 [Service]
-ExecStart=%h/.local/bin/mine-when-idle WALLET_ADDRESS
+ExecStart=%h/.local/bin/mine-while-idle WALLET_ADDRESS
 
 [Install]
 WantedBy=default.target

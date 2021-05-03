@@ -35,7 +35,7 @@ set -u
 verify_prerequisites
 
 mkdir -p "$HOME/.local/bin"
-cp mine-when-idle "$HOME/.local/bin/mine-when-idle"
+cp mine-while-idle "$HOME/.local/bin/mine-while-idle"
 
 mkdir -p "$(dirname "$SERVICE_FILE_PATH")"
 sed "s/WALLET_ADDRESS/$WALLET_ADDRESS/" service-template > "$SERVICE_FILE_PATH"
