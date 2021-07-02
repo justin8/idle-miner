@@ -6,6 +6,12 @@ verify_prerequisites() {
     echo "Cannot find PhoenixMiner in \$PATH. Please install it first"
     exit 1
   fi
+
+  if ! which screen &>/dev/null; then
+    echo "Cannot find screen in \$PATH. Please install it first"
+    exit 1
+  fi
+
 }
 
 
