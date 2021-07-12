@@ -11,7 +11,10 @@ stop_miner() {
 
 start_miner() {
 	#MINING_COMMAND="PhoenixMiner -pool asia1.ethermine.org:4444 -wal "$WALLET_ADDRESS" -worker asus -epsw x -mode 1 -log 0 -mport 0 -etha 0 -ftime 55 -retrydelay 1 -tt 79 -tstop 89  -coin eth"
-	MINING_COMMAND="ethminer -P stratum://$WALLET_ADDRESS@asia1.ethermine.org:4444"
+
+	# We select two network servers for ethminer, this way it will infinitely retry connections between the two
+	# When you utilize a single address it will fail on the first dropped network connection
+	MINING_COMMAND="ethminer -P stratum://$WALLET_ADDRESS@asia1.ethermine.org:4444 -P stratum://$WALLET_ADDRESS@eu1.ethermine.org:4444"
 
 	screen -dmS "$SCREEN_SESSION_NAME" -L -Logfile "$LOGFILE" $MINING_COMMAND
 }
