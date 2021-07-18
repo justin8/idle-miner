@@ -2,7 +2,7 @@
 
 SCREEN_SESSION_NAME="miner"
 WALLET_ADDRESS="$1"
-LOGFILE="/tmp/miner-log"
+LOGFILE="$HOME/.miner-log"
 
 stop_miner() {
 	echo "Stopping miner..."
