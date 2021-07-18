@@ -27,7 +27,7 @@ verify_prerequisites() {
 }
 
 SERVICE_NAME="mine-while-idle"
-SERVICE_FILE_PATH="$HOME/.local/share/systemd/user/$SERVICE_NAME.service"
+SERVICE_FILE_PATH="$HOME/.config/systemd/user/$SERVICE_NAME.service"
 WALLET_ADDRESS=$1
 
 cd "$(dirname "$(readlink -f "$0")")"
