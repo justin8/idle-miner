@@ -1,12 +1,19 @@
 #!/bin/bash
 
+############
+# Settings #
+############
 SCREEN_SESSION_NAME="miner"
 WALLET_ADDRESS="$1"
 LOGFILE="$HOME/.miner-log"
+############
+CURRENTLY_MINING=false
+
 
 stop_miner() {
 	echo "Stopping miner..."
 	screen -S $SCREEN_SESSION_NAME -X stuff "^C"
+	CURRENTLY_MINING=false
 }
 
 start_miner() {
@@ -16,7 +23,14 @@ start_miner() {
 	# When you utilize a single address it will fail on the first dropped network connection
 	MINING_COMMAND="ethminer -P stratum://$WALLET_ADDRESS@asia1.ethermine.org:4444 -P stratum://$WALLET_ADDRESS@eu1.ethermine.org:4444"
 
-	screen -dmS "$SCREEN_SESSION_NAME" -L -Logfile "$LOGFILE" $MINING_COMMAND
+	if [[ $CURRENTLY_MINING == true ]]; then
+		echo "Mining already active, not starting a second miner"
+	else
+		echo "Starting miner..."
+		screen -dmS "$SCREEN_SESSION_NAME" -L -Logfile "$LOGFILE" $MINING_COMMAND
+		CURRENTLY_MINING=true
+	fi
+dd
 }
 
 if [[ ! $WALLET_ADDRESS ]]; then
@@ -39,11 +53,11 @@ dbus-monitor --session "type='signal',interface='org.gnome.ScreenSaver'" | while
 	echo "New message: $line"
 	case "$line" in
 	*"boolean true"*)
-		echo "Lock screen active, starting to mine..."
+		echo "Lock screen active..."
 		start_miner
 		;;
 	*"boolean false"*)
-		echo "Lock screen inactive, stopping miner..."
+		echo "Lock screen inactive..."
 		stop_miner
 		;;
 	esac
