@@ -7,13 +7,16 @@ SCREEN_SESSION_NAME="miner"
 WALLET_ADDRESS="$1"
 LOGFILE="$HOME/.miner-log"
 ############
-CURRENTLY_MINING=false
 
+currently_mining() {
+	screen -ls $SCREEN_SESSION_NAME &>/dev/null
+}
 
 stop_miner() {
-	echo "Stopping miner..."
-	screen -S $SCREEN_SESSION_NAME -X stuff "^C"
-	CURRENTLY_MINING=false
+	if currently_mining; then
+		echo "Stopping miner..."
+		screen -S $SCREEN_SESSION_NAME -X stuff "^C"
+	fi
 }
 
 start_miner() {
@@ -23,14 +26,11 @@ start_miner() {
 	# When you utilize a single address it will fail on the first dropped network connection
 	MINING_COMMAND="ethminer -P stratum://$WALLET_ADDRESS@asia1.ethermine.org:4444 -P stratum://$WALLET_ADDRESS@eu1.ethermine.org:4444"
 
-	if [[ $CURRENTLY_MINING == true ]]; then
-		echo "Mining already active, not starting a second miner"
-	else
+	if ! currently_mining; then
 		echo "Starting miner..."
 		screen -dmS "$SCREEN_SESSION_NAME" -L -Logfile "$LOGFILE" $MINING_COMMAND
-		CURRENTLY_MINING=true
 	fi
-dd
+	dd
 }
 
 if [[ ! $WALLET_ADDRESS ]]; then
@@ -39,26 +39,35 @@ if [[ ! $WALLET_ADDRESS ]]; then
 fi
 
 # Cleanup existing screen sessions
-sessions="$(screen -list | grep -P '^\s+' | grep -oP '(?<=\d{5}\.).*?(?=\s+)')"
-if [[ "$sessions" ]]; then
-	for session in $sessions; do
-		echo "Found existing screen session '$session'"
-		if [[ $session == "$SCREEN_SESSION_NAME" ]]; then
-			stop_miner
-		fi
-	done
+if currently_mining; then
+	stop_miner
 fi
 
-dbus-monitor --session "type='signal',interface='org.gnome.ScreenSaver'" | while read -r line; do
-	echo "New message: $line"
-	case "$line" in
-	*"boolean true"*)
+previous_active_state=false
+while true; do
+	current_active_state="$(qdbus org.gnome.ScreenSaver /org/gnome/ScreenSaver org.gnome.ScreenSaver.GetActive)"
+	if [[ $previous_active_state == "false" ]] && [[ $current_active_state == "true" ]]; then
 		echo "Lock screen active..."
 		start_miner
-		;;
-	*"boolean false"*)
+	elif [[ $previous_active_state == "true" ]] && [[ $current_active_state == "false" ]]; then
 		echo "Lock screen inactive..."
 		stop_miner
-		;;
-	esac
+	fi
+	previous_active_state="$current_active_state"
+	sleep 2
 done
+
+# Dbus monitor appears to be kind of flaky under GNOME 40 inside of a systemd service
+# dbus-monitor --session "type='signal',interface='org.gnome.ScreenSaver'" | while read -r line; do
+# 	echo "New message: $line"
+# 	case "$line" in
+# 	*"boolean true"*)
+# 		echo "Lock screen active..."
+# 		start_miner
+# 		;;
+# 	*"boolean false"*)
+# 		echo "Lock screen inactive..."
+# 		stop_miner
+# 		;;
+# 	esac
+# done

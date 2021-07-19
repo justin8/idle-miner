@@ -24,6 +24,11 @@ verify_prerequisites() {
     sudo apt-get install -y screen
   fi
 
+  if ! command -v qdbus &>/dev/null; then
+    echo "Cannot find qdbus command in \$PATH. Installing..."
+    sudo apt-get install -y qt5-tools
+  fi
+
 }
 
 SERVICE_NAME="mine-while-idle"
